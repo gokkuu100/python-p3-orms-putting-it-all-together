@@ -23,6 +23,7 @@ class Dog:
 
         CURSOR.execute(sql)
 
+    @classmethod
     def drop_table(self):
         sql = """"
             DROP TABLE IF EXISTS dogs
@@ -30,6 +31,7 @@ class Dog:
 
         CURSOR.execute(sql)
 
+    
     def save(self):
         sql = """"
             INSERT INTO dogs(name, breed)
@@ -39,15 +41,19 @@ class Dog:
         CURSOR.execute(sql, (self.name, self.breed))
         self.id = CURSOR.execute("SELECT last_insert_rowid() FROM dogs").fetchone()[0]
 
+    @classmethod
     def create(cls, name, breed):
         dog = Dog(name, breed)
         dog.save()
         return dog
     
+    @classmethod
     def new_from_db(cls, row):
         dog = cls(row[1], row[2])
         dog.id = row[0]
+        return dog
 
+    @classmethod
     def get_all(cls):
         sql = """"
             SELECT * 
@@ -57,6 +63,7 @@ class Dog:
         all = CURSOR.execute(sql).fetchall()
         cls.all = [cls.new_from_db(row) for row in all]
 
+    @classmethod
     def find_by_name(cls, name):
         sql = """"
             SELECT *
@@ -65,8 +72,12 @@ class Dog:
         """
 
         dog = CURSOR.execute(sql, (name,)).fetchone()
-        return cls.new_from_db(dog)
+        if dog:
+            return cls.new_from_db(dog)
+        else:
+            return None
     
+    @classmethod
     def find_by_id(cls, id):
         sql = """"
             SELECT *
@@ -75,6 +86,9 @@ class Dog:
         """
 
         dog = CURSOR.execute(sql, (id,)).fetchone()
-        return cls.new_from_db(dog)
+        if dog:
+            return cls.new_from_db(dog)
+        else:
+            return None
     
     pass
